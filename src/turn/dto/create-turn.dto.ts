@@ -6,7 +6,7 @@ import {
   IsIn,
 } from 'class-validator';
 
-export class CreateTurnoDto {
+export class CreateTurnDto {
   @IsNumber()
   clienteId!: number;
 
