@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+<<<<<<< HEAD
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TurnosModule } from './turnos/turnos.module';
@@ -21,6 +22,22 @@ import { UsuariosModule } from './usuarios/usuarios.module';
     TurnosModule,
     ProfesionalesModule,
     UsuariosModule,
+=======
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { databaseConfig } from './config/database.config';
+import { UserModule } from './user/user.module';
+import { TurnModule } from './turn/turn.module';
+import { ProfessionalProfileModule } from './professional-profile/professional-profile.module';
+import { ConfigModule } from '@nestjs/config';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }), // Carga las variables
+    TypeOrmModule.forRootAsync(databaseConfig), // Usa la configuración asíncrona
+    UserModule,
+    TurnModule,
+    ProfessionalProfileModule,
+>>>>>>> d44bc5f0d9a57a525d86932112edf0e0486e8ec8
   ],
 })
 export class AppModule {}
