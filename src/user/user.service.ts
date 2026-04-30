@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ProfessionalProfile } from '../professional-profile/entities/professional-profile.entity';
 
 @Injectable()
 export class UserService {
@@ -21,12 +22,40 @@ export class UserService {
   }
 
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-  ) {}
+  @InjectRepository(User)
+  private userRepository: Repository<User>,
 
-  async create(createUserDto: CreateUserDto) {
-    const user = this.userRepository.create(createUserDto);
-    return await this.userRepository.save(user); // TRy catch para manejar errores de validación, como email duplicado
+  @InjectRepository(ProfessionalProfile)
+  private professionalRepository: Repository<ProfessionalProfile>,
+) {}
+
+async create(dto: CreateUserDto) {
+
+  // 1. Crear usuario base
+  const user = await this.userRepository.save({
+    nombre: dto.nombre,
+    apellido: dto.apellido,
+    telefono: dto.telefono,
+    email: dto.email,
+    password: dto.password,
+    rol: dto.rol,
+  });
+
+  // 2. Si es profesional → crear perfil
+  if (dto.rol === "profesional") {
+    if (!dto.profesion) {
+      throw new Error("Falta la profesión");
+    }
+
+    await this.professionalRepository.save({
+      user: user,
+      profesion: dto.profesion,
+      precio_min: dto.precio_min || 0,
+      precio_max: dto.precio_max || 0,
+      // descripcion: dto.descripcion,
+    });
   }
+
+  return user;
+}
 }

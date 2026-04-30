@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { ProfessionalProfileService } from './professional-profile.service';
 import { CreateProfessionalProfileDto } from './dto/create-professional-profile.dto';
 import { UpdateProfessionalProfileDto } from './dto/update-professional-profile.dto';
@@ -17,18 +17,40 @@ export class ProfessionalProfileController {
     return this.professionalProfileService.findAll();
   }
 
+  // Traer perfil por id de perfil
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.professionalProfileService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.professionalProfileService.findOne(id);
+  }
+
+  // Traer perfil por userId — usado al cargar el panel
+  @Get('user/:userId')
+  findByUserId(@Param('userId', ParseIntPipe) userId: number) {
+    return this.professionalProfileService.findByUserId(userId);
+  }
+
+  // Traer turnos del profesional separados por estado — usado por PanelProfesional
+  @Get('user/:userId/turnos')
+  findTurnos(@Param('userId', ParseIntPipe) userId: number) {
+    return this.professionalProfileService.findTurnosByUserId(userId);
+  }
+
+  // Cambiar estado de un turno — aceptar/rechazar/restaurar
+  @Patch('turnos/:turnoId/estado')
+  actualizarEstado(
+    @Param('turnoId', ParseIntPipe) turnoId: number,
+    @Body('estado') estado: string,
+  ) {
+    return this.professionalProfileService.actualizarEstadoTurno(turnoId, estado);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProfessionalProfileDto: UpdateProfessionalProfileDto) {
-    return this.professionalProfileService.update(+id, updateProfessionalProfileDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateProfessionalProfileDto: UpdateProfessionalProfileDto) {
+    return this.professionalProfileService.update(id, updateProfessionalProfileDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.professionalProfileService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.professionalProfileService.remove(id);
   }
 }
