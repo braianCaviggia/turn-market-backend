@@ -8,11 +8,13 @@ export class CreateProfessionalProfileDto {
     profesion!: string;
 
     @IsNumber()
+    @IsNotEmpty()
     precio_min!: number;
 
     @IsNumber()
+    @IsNotEmpty()
     precio_max!: number;
 
-    @IsOptional()
-    descripcion?: string;
+    // @IsOptional()
+    // descripcion?: string;
 }
