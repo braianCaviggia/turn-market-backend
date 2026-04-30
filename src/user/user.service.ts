@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -8,6 +8,21 @@ import { ProfessionalProfile } from '../professional-profile/entities/profession
 
 @Injectable()
 export class UserService {
+  async login(email: string, password: string) {
+    const user = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+
+    if (user.password !== password) {
+      throw new UnauthorizedException('Contraseña incorrecta');
+    }
+
+    return user;
+  }
   remove(arg0: number) {
     throw new Error('Method not implemented.');
   }
@@ -22,40 +37,40 @@ export class UserService {
   }
 
   constructor(
-  @InjectRepository(User)
-  private userRepository: Repository<User>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
 
-  @InjectRepository(ProfessionalProfile)
-  private professionalRepository: Repository<ProfessionalProfile>,
-) {}
+    @InjectRepository(ProfessionalProfile)
+    private professionalRepository: Repository<ProfessionalProfile>,
+  ) { }
 
-async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto) {
 
-  // 1. Crear usuario base
-  const user = await this.userRepository.save({
-    nombre: dto.nombre,
-    apellido: dto.apellido,
-    telefono: dto.telefono,
-    email: dto.email,
-    password: dto.password,
-    rol: dto.rol,
-  });
+    // 1. Crear usuario base
+    const user = await this.userRepository.save({
+      nombre: dto.nombre,
+      apellido: dto.apellido,
+      telefono: dto.telefono,
+      email: dto.email,
+      password: dto.password,
+      rol: dto.rol,
+    });
 
-  // 2. Si es profesional → crear perfil
-  if (dto.rol === "profesional") {
-    if (!dto.profesion) {
-      throw new Error("Falta la profesión");
+    // 2. Si es profesional → crear perfil
+    if (dto.rol === "profesional") {
+      if (!dto.profesion) {
+        throw new Error("Falta la profesión");
+      }
+
+      await this.professionalRepository.save({
+        user: user,
+        profesion: dto.profesion,
+        precio_min: dto.precio_min || 0,
+        precio_max: dto.precio_max || 0,
+        // descripcion: dto.descripcion,
+      });
     }
 
-    await this.professionalRepository.save({
-      user: user,
-      profesion: dto.profesion,
-      precio_min: dto.precio_min || 0,
-      precio_max: dto.precio_max || 0,
-      // descripcion: dto.descripcion,
-    });
+    return user;
   }
-
-  return user;
-}
 }
