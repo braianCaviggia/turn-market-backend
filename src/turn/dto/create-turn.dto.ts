@@ -4,6 +4,7 @@ import {
   IsString,
   IsOptional,
   IsIn,
+  IsISO8601,
 } from 'class-validator';
 
 export class CreateTurnDto {
@@ -14,10 +15,7 @@ export class CreateTurnDto {
   profesionalId!: number;
 
   @IsDateString()
-  fecha!: string;
-
-  @IsString()
-  hora!: string;
+  fecha_hora!: string;
 
   @IsOptional()
   @IsString()
@@ -26,5 +24,5 @@ export class CreateTurnDto {
 
   @IsOptional()
   @IsString()
-  observaciones?: string;
+  motivo?: string;
 }

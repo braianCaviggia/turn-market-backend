@@ -19,17 +19,20 @@ export class CreateUserDto {
 
   
   @IsString()
-  profesion!: string;
+  @IsOptional()
+  profesion?: string;
 
   
   @Type(() => Number)
   @IsNumber()
-  precio_min!: number;
+  @IsOptional()
+  precio_min?: number;
 
   
   @Type(() => Number)
   @IsNumber()
-  precio_max!: number;
+  @IsOptional() 
+  precio_max?: number;
 
   @IsString()
   telefono!: string;
