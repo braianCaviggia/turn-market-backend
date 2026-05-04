@@ -37,7 +37,7 @@ export class ProfessionalProfileService {
     });
   }
 
-  // comportamiento actual intacto
+  // el comportamiento de user queda como estaba
   return this.profileRepository.find({
     relations: ['user'],
   });

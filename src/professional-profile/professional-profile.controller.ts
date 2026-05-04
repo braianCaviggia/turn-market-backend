@@ -12,6 +12,7 @@ export class ProfessionalProfileController {
     return this.professionalProfileService.create(createProfessionalProfileDto);
   }
 
+  // Traer todos los perfiles, con filtro opcional por profesión
   @Get()
 findAll(@Query('profesion') profesion?: string) {
   return this.professionalProfileService.findAll(profesion);
