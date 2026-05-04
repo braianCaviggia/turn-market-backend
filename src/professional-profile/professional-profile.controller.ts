@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { ProfessionalProfileService } from './professional-profile.service';
 import { CreateProfessionalProfileDto } from './dto/create-professional-profile.dto';
 import { UpdateProfessionalProfileDto } from './dto/update-professional-profile.dto';
@@ -12,10 +12,11 @@ export class ProfessionalProfileController {
     return this.professionalProfileService.create(createProfessionalProfileDto);
   }
 
+  // Traer todos los perfiles, con filtro opcional por profesión
   @Get()
-  findAll() {
-    return this.professionalProfileService.findAll();
-  }
+findAll(@Query('profesion') profesion?: string) {
+  return this.professionalProfileService.findAll(profesion);
+}
 
   // Traer perfil por id de perfil
   @Get(':id')

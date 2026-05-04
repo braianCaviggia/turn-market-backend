@@ -27,11 +27,21 @@ export class ProfessionalProfileService {
 }
 
   // Traer todos los perfiles
-  async findAll(): Promise<ProfessionalProfile[]> {
+  async findAll(profesion?: string): Promise<ProfessionalProfile[]> {
+  if (profesion) {
     return this.profileRepository.find({
+      where: {
+        profesion, // filtro SOLO si viene
+      },
       relations: ['user'],
     });
   }
+
+  // el comportamiento de user queda como estaba
+  return this.profileRepository.find({
+    relations: ['user'],
+  });
+}
 
   // Traer perfil por id de perfil
   async findOne(id: number): Promise<ProfessionalProfile> {
