@@ -4,7 +4,6 @@ import {
   IsString,
   IsOptional,
   IsIn,
-  IsISO8601,
 } from 'class-validator';
 
 export class CreateTurnDto {

@@ -22,7 +22,7 @@ export class TurnService {
     private userRepository: Repository<User>
   ) { }
   async create(createTurnDto: CreateTurnDto): Promise<Turn> {
-
+  
     //validar si existe el profesional y cliente
 
     const profesional = await this.professionalProfileRepository.findOne({
@@ -71,16 +71,20 @@ export class TurnService {
     if (turnoExistente) {
       throw new BadRequestException("El profesional ya tiene un turno programado para esa fecha y hora");
     }
-
+ 
+    
     const turn = this.turnRepository.create({
-      profesional,
+      profesional: profesional.user,
       cliente,
       fecha_hora: fechaHora,
-      estado: createTurnDto.estado || "pendiente",
-      motivo: createTurnDto.motivo || "",
+      estado: "pendiente",
+      motivo: createTurnDto.motivo || ""
     })
     return this.turnRepository.save(turn);
+    
+    
   }
+
 
   findAll() {
     return `This action returns all turn`;
