@@ -81,24 +81,44 @@ export class TurnService {
       motivo: createTurnDto.motivo || ""
     })
     return this.turnRepository.save(turn);
-    
-    
   }
 
+  //funcion para traer los turnos de un cliente especifico, se le pasa el id del cliente y devuelve un array con los turnos asociados a ese cliente
 
-  findAll() {
-    return `This action returns all turn`;
+  async getTurnClient(clienteId: number) {
+    
+    return this.turnRepository.find( {
+      where:{ cliente: {id : clienteId}},
+
+      relations: ["cliente", "profesional"]
+    })}
+
+  
+  async getTurnProfessional(profesionalId: number) {
+    return this.turnRepository.find( {
+      where:{ profesional: {id : profesionalId}},
+      relations: ["cliente", "profesional"]
+    })}
+
+
+  find() {
+    return this.turnRepository.find({
+      relations: ['cliente', 'profesional']
+    });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} turn`;
+      return this.turnRepository.findOne({
+      where: { id },
+      relations: ['cliente', 'profesional']
+    });
   }
 
-  update(id: number, updateTurnDto: UpdateTurnDto) {
-    return `This action updates a #${id} turn`;
-  }
+  // update(id: number, updateTurnDto: UpdateTurnDto) {
+  //   return `This action updates a #${id} turn`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} turn`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} turn`;
+  // }
 }
