@@ -7,28 +7,33 @@ import { UpdateTurnDto } from './dto/update-turn.dto';
 export class TurnController {
   constructor(private readonly turnService: TurnService) {}
 
-  @Post()
+   @Post()
   create(@Body() createTurnDto: CreateTurnDto) {
     return this.turnService.create(createTurnDto);
   }
 
-  @Get()
-  findAll() {
-    return this.turnService.findAll();
+  @Get("user/:id")
+  findClient(@Param("id") id: string) {
+    return this.turnService.getTurnClient(+id);
+  }
+
+   @Get("professional/:id")
+  findProfessional(@Param("id") id: string) {
+    return this.turnService.getTurnProfessional(+id);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.turnService.findOne(+id);
-  }
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTurnDto: UpdateTurnDto) {
-    return this.turnService.update(+id, updateTurnDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateTurnDto: UpdateTurnDto) {
+  //   return this.turnService.update(+id, updateTurnDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.turnService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.turnService.remove(+id);
+  // }
 }
