@@ -64,6 +64,7 @@ export class ProfessionalProfileService {
   }
 
   // Traer los turnos del profesional separados por estado — lo usa el PanelProfesional
+  //Aplique esta logica en el service de turnos para no mezclar responsabilidades
   async findTurnosByUserId(userId: number) {
     const turnos = await this.turnRepository.find({
       where: { profesional: { id: userId } },
@@ -78,6 +79,7 @@ export class ProfessionalProfileService {
   }
 
   // Actualizar estado de un turno — aceptar/rechazar/restaurar
+  //Igual que el anterior, esta logica la aplico en service de turnos
   async actualizarEstadoTurno(turnoId: number, estado: string): Promise<Turn> {
     const turno = await this.turnRepository.findOne({
       where: { id: turnoId },
