@@ -94,11 +94,30 @@ export class TurnService {
     })}
 
   
+
   async getTurnProfessional(profesionalId: number) {
-    return this.turnRepository.find( {
+   const turnos = await this.turnRepository.find( {
       where:{ profesional: {id : profesionalId}},
       relations: ["cliente", "profesional"]
-    })}
+    })
+
+     return {
+      pendientes: turnos.filter(t => t.estado === 'pendiente'),
+      confirmados: turnos.filter(t => t.estado === 'confirmado'),
+      rechazados: turnos.filter(t => t.estado === 'rechazado'),
+    };
+  
+  }
+
+   async actualizarEstadoTurno(turnoId: number, estado: string): Promise<Turn> {
+    const turno = await this.turnRepository.findOne({
+      where: { id: turnoId },
+      relations: ['cliente', 'profesional'],
+    });
+    if (!turno) throw new NotFoundException(`Turno ${turnoId} no encontrado`);
+    turno.estado = estado;
+    return this.turnRepository.save(turno);
+  }
 
 
   find() {
