@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -46,31 +46,47 @@ export class UserService {
 
   async create(dto: CreateUserDto) {
 
-    // 1. Crear usuario base
-    const user = await this.userRepository.save({
-      nombre: dto.nombre,
-      apellido: dto.apellido,
-      telefono: dto.telefono,
-      email: dto.email,
-      password: dto.password,
-      rol: dto.rol,
-    });
+    //Envuelvo toda la lógica del create en un try/catch para capturar específicamente los errores de MySQL/TypeORM
+    try {
+      // 1. Crear usuario base
+      const user = await this.userRepository.save({
+        nombre: dto.nombre,
+        apellido: dto.apellido,
+        telefono: dto.telefono,
+        email: dto.email,
+        password: dto.password,
+        rol: dto.rol,
+      });
 
-    // 2. Si es profesional → crear perfil
-    if (dto.rol === "profesional") {
-      if (!dto.profesion) {
-        throw new Error("Falta la profesión");
+      // 2. Si es profesional → crear perfil
+      if (dto.rol === "profesional") {
+        if (!dto.profesion) {
+          throw new Error("Falta la profesión");
+        }
+
+        await this.professionalRepository.save({
+          user: user,
+          profesion: dto.profesion,
+          precio_min: dto.precio_min || 0,
+          precio_max: dto.precio_max || 0,
+          // descripcion: dto.descripcion,
+        });
       }
 
-      await this.professionalRepository.save({
-        user: user,
-        profesion: dto.profesion,
-        precio_min: dto.precio_min || 0,
-        precio_max: dto.precio_max || 0,
-        // descripcion: dto.descripcion,
-      });
-    }
+      return user;
+    } catch (error: any) {
 
-    return user;
+      // Si alguien intenta registrarse con un email repetido MySQL lanza: ER_DUP_ENTRY y el backend responde con el mensaje: "El email ya está registrado",
+
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestException('El email ya está registrado');
+      }
+
+      console.error(error);
+
+      throw new InternalServerErrorException(
+        'Error al crear el usuario',
+      );
+    }
   }
 }
