@@ -5,23 +5,24 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ProfessionalProfile } from '../professional-profile/entities/professional-profile.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  async login(email: string, password: string) {
-    const user = await this.userRepository.findOne({
+  async findByEmail(email: string) {
+
+    return this.userRepository.findOne({
       where: { email },
+
+      select: [
+        'id',
+        'nombre',
+        'apellido',
+        'email',
+        'password',
+        'rol',
+      ],
     });
-
-    if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
-    }
-
-    if (user.password !== password) {
-      throw new UnauthorizedException('Contraseña incorrecta');
-    }
-
-    return user;
   }
   remove(arg0: number) {
     throw new Error('Method not implemented.');
@@ -48,13 +49,19 @@ export class UserService {
 
     //Envuelvo toda la lógica del create en un try/catch para capturar específicamente los errores de MySQL/TypeORM
     try {
+
+      const hashedPassword = await bcrypt.hash(
+        dto.password,
+        10,
+      );
+
       // 1. Crear usuario base
       const user = await this.userRepository.save({
         nombre: dto.nombre,
         apellido: dto.apellido,
         telefono: dto.telefono,
         email: dto.email,
-        password: dto.password,
+        password: hashedPassword,
         rol: dto.rol,
       });
 

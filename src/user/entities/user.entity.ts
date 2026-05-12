@@ -15,7 +15,7 @@ export class User {
   @Column({ unique: true })
   email!: string;
 
-  @Column()
+  @Column({ select: false }) //Evita que la contraseña se devuelva en consultas normales, pero sigue estando disponible para validación en el login
   password!: string;
 
   @Column({ nullable: true })
