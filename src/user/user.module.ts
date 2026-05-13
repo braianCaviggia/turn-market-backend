@@ -9,5 +9,6 @@ import { ProfessionalProfile } from '../professional-profile/entities/profession
   imports: [TypeOrmModule.forFeature([User, ProfessionalProfile])],
   controllers: [UserController],
   providers: [UserService],
+    exports: [UserService],
 })
 export class UserModule {}
