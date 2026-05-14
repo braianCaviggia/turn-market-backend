@@ -24,14 +24,24 @@ export class UserService {
       ],
     });
   }
-  remove(arg0: number) {
-    throw new Error('Method not implemented.');
+  remove(id: number) {
+    return this.userRepository.delete(id);
   }
-  update(arg0: number, updateUserDto: UpdateUserDto) {
-    throw new Error('Method not implemented.');
+  update(id: number, updateUserDto: UpdateUserDto) {
+    return this.userRepository.update(id, updateUserDto);
   }
-  findOne(arg0: number) {
-    throw new Error('Method not implemented.');
+  async findOne(id: number) {
+    return this.userRepository.findOne({
+      where: { id },
+      select: [
+        'id',
+        'nombre',
+        'apellido',
+        'email',
+        'telefono',
+        'rol',
+      ],
+    });
   }
   findAll() {
     throw new Error('Method not implemented.');
