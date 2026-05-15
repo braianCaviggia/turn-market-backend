@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ProfessionalProfile } from '../professional-profile/entities/professional-profile.entity';
+import { Turn } from '../turn/entities/turn.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -24,11 +25,28 @@ export class UserService {
       ],
     });
   }
-  remove(id: number) {
-    return this.userRepository.delete(id);
+  async remove(id: number) {
+    try {
+      // Eliminar todos los turnos donde el usuario es cliente o profesional
+      await this.turnRepository.delete([
+        { cliente: { id } },
+        { profesional: { id } },
+      ]);
+
+      // Eliminar el perfil profesional si existe
+      await this.professionalRepository.delete({ user: { id } });
+
+      // Finalmente eliminar el usuario
+      await this.userRepository.delete(id);
+
+      return { message: 'Usuario eliminado correctamente' };
+    } catch (error: any) {
+      console.error(error);
+      throw new InternalServerErrorException('Error al eliminar el usuario');
+    }
   }
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return this.userRepository.update(id, updateUserDto);
+  update(arg0: number, updateUserDto: UpdateUserDto) {
+    return this.userRepository.update(arg0, updateUserDto);
   }
   async findOne(id: number) {
     return this.userRepository.findOne({
@@ -53,6 +71,9 @@ export class UserService {
 
     @InjectRepository(ProfessionalProfile)
     private professionalRepository: Repository<ProfessionalProfile>,
+
+    @InjectRepository(Turn)
+    private turnRepository: Repository<Turn>,
   ) { }
 
   async create(dto: CreateUserDto) {
