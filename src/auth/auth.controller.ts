@@ -6,7 +6,7 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
-  ) {}
+  ) { }
 
   // Endpoint: POST /auth/login
   @Post('login')
@@ -17,11 +17,20 @@ export class AuthController {
       password: string;
     },
   ) {
-    
     // Llamamos al service que hace toda la lógica de login
     return this.authService.login(
       body.email,
       body.password,
     );
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() body: { email: string }) {
+    return this.authService.forgotPassword(body.email);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() body: any) {
+    return this.authService.resetPassword(body);
   }
 }
