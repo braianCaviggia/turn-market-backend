@@ -3,7 +3,7 @@ import { User } from '../../user/entities/user.entity';
 
 @Entity()
 export class Turn {
-   
+
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -21,4 +21,16 @@ export class Turn {
 
     @Column({ nullable: true })
     motivo!: string;
+
+    @Column({ nullable: true })
+    descripcionServicio!: string;
+
+    @Column({ nullable: true })
+    duracionEstimada!: number;
+
+    @Column({ nullable: true })
+    bufferDescanso!: number;
+
+    @Column({ nullable: true })
+    horaFin!: string;
 }
