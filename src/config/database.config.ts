@@ -2,14 +2,15 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 
 export const databaseConfig: TypeOrmModuleAsyncOptions = {
+  inject: [ConfigService],
   useFactory: (configService: ConfigService) => ({
-  type: 'mysql',
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  username: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  autoLoadEntities: true,
-  synchronize: true,
+    type: 'mysql',
+    host: configService.get<string>('DB_HOST'),
+    port: configService.get<number>('DB_PORT'),
+    username: configService.get<string>('DB_USER'),
+    password: configService.get<string>('DB_PASS'),
+    database: configService.get<string>('DB_NAME'),
+    autoLoadEntities: true,
+    synchronize: true,
   }),
 };

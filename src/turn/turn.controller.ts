@@ -31,8 +31,11 @@ export class TurnController {
       actualizarEstado(
         @Param('turnoId', ParseIntPipe) turnoId: number,
         @Body('estado') estado: string,
+        @Body('duracionEstimada') duracionEstimada?: number,
+        @Body('bufferDescanso') bufferDescanso?: number,
+        @Body('horaFin') horaFin?: string,
       ) {
-        return this.turnService.actualizarEstadoTurno(turnoId, estado);
+        return this.turnService.actualizarEstadoTurno(turnoId, estado, duracionEstimada, bufferDescanso, horaFin);
       }
 
   // @Patch(':id')
