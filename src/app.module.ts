@@ -5,6 +5,7 @@ import { databaseConfig } from './config/database.config';
 import { UserModule } from './user/user.module';
 import { TurnModule } from './turn/turn.module';
 import { ProfessionalProfileModule } from './professional-profile/professional-profile.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ProfessionalProfileModule } from './professional-profile/professional-p
     UserModule,
     TurnModule,
     ProfessionalProfileModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import {Turn} from "../../turn/entities/turn.entity";
+import { Turn } from "../../turn/entities/turn.entity";
 
 @Entity()
 export class User {
@@ -15,7 +15,7 @@ export class User {
   @Column({ unique: true })
   email!: string;
 
-  @Column()
+  @Column({ select: false }) //Evita que la contraseña se devuelva en consultas normales, pero sigue estando disponible para validación en el login
   password!: string;
 
   @Column({ nullable: true })
@@ -29,4 +29,13 @@ export class User {
 
   @OneToMany(() => Turn, (turn) => turn.profesional)
   turnosComoProfesional!: Turn[];
+
+  @Column({ nullable: true }) // Campos para recuperación de contraseña
+  resetCode!: string;
+
+  @Column({
+    nullable: true,
+    type: 'bigint'
+  })
+  resetCodeExpires!: number; // Timestamp en milisegundos
 }

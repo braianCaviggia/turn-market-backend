@@ -24,4 +24,20 @@ export class CreateTurnDto {
   @IsOptional()
   @IsString()
   motivo?: string;
+
+  @IsOptional()
+  @IsString()
+  descripcionServicio?: string;
+
+  @IsOptional()
+  @IsNumber()
+  duracionEstimada?: number;
+
+  @IsOptional()
+  @IsNumber()
+  bufferDescanso?: number;
+
+  @IsOptional()
+  @IsString()
+  horaFin?: string;
 }

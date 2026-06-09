@@ -81,24 +81,72 @@ export class TurnService {
       motivo: createTurnDto.motivo || ""
     })
     return this.turnRepository.save(turn);
+  }
+
+  //funcion para traer los turnos de un cliente especifico, se le pasa el id del cliente y devuelve un array con los turnos asociados a ese cliente
+
+  async getTurnClient(clienteId: number) {
     
-    
+    return this.turnRepository.find( {
+      where:{ cliente: {id : clienteId}},
+
+      relations: ["cliente", "profesional"]
+    })}
+
+  
+
+  async getTurnProfessional(profesionalId: number) {
+   const turnos = await this.turnRepository.find( {
+      where:{ profesional: {id : profesionalId}},
+      relations: ["cliente", "profesional"]
+    })
+
+     return {
+      pendientes: turnos.filter(t => t.estado === 'pendiente'),
+      confirmados: turnos.filter(t => t.estado === 'confirmado'),
+      rechazados: turnos.filter(t => t.estado === 'rechazado'),
+    };
+  
+  }
+
+   async actualizarEstadoTurno(
+    turnoId: number,
+    estado: string,
+    duracionEstimada?: number,
+    bufferDescanso?: number,
+    horaFin?: string,
+  ): Promise<Turn> {
+    const turno = await this.turnRepository.findOne({
+      where: { id: turnoId },
+      relations: ['cliente', 'profesional'],
+    });
+    if (!turno) throw new NotFoundException(`Turno ${turnoId} no encontrado`);
+    turno.estado = estado;
+    if (duracionEstimada !== undefined) turno.duracionEstimada = duracionEstimada;
+    if (bufferDescanso !== undefined) turno.bufferDescanso = bufferDescanso;
+    if (horaFin !== undefined) turno.horaFin = horaFin;
+    return this.turnRepository.save(turno);
   }
 
 
-  findAll() {
-    return `This action returns all turn`;
+  find() {
+    return this.turnRepository.find({
+      relations: ['cliente', 'profesional']
+    });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} turn`;
+      return this.turnRepository.findOne({
+      where: { id },
+      relations: ['cliente', 'profesional']
+    });
   }
 
-  update(id: number, updateTurnDto: UpdateTurnDto) {
-    return `This action updates a #${id} turn`;
-  }
+  // update(id: number, updateTurnDto: UpdateTurnDto) {
+  //   return `This action updates a #${id} turn`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} turn`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} turn`;
+  // }
 }

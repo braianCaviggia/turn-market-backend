@@ -1,0 +1,36 @@
+import { Body, Controller, Post } from '@nestjs/common';
+import { AuthService } from './auth.service';
+
+@Controller('auth')
+export class AuthController {
+
+  constructor(
+    private readonly authService: AuthService,
+  ) { }
+
+  // Endpoint: POST /auth/login
+  @Post('login')
+  login(
+    @Body()
+    body: {
+      email: string;
+      password: string;
+    },
+  ) {
+    // Llamamos al service que hace toda la lógica de login
+    return this.authService.login(
+      body.email,
+      body.password,
+    );
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() body: { email: string }) {
+    return this.authService.forgotPassword(body.email);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() body: any) {
+    return this.authService.resetPassword(body);
+  }
+}
