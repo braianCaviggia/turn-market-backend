@@ -35,5 +35,9 @@ export class CreateUserDto {
   precio_max?: number;
 
   @IsString()
+  @IsOptional() 
+  direccion?: string;
+
+  @IsString()
   telefono!: string;
 }

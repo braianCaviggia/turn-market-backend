@@ -107,6 +107,7 @@ export class UserService {
           profesion: dto.profesion,
           precio_min: dto.precio_min || 0,
           precio_max: dto.precio_max || 0,
+          direccion: dto.direccion || null,
           // descripcion: dto.descripcion,
         });
       }

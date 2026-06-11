@@ -21,4 +21,7 @@ export class ProfessionalProfile {
 
   @Column({ nullable: true })
   descripcion!: string;
+
+  @Column({ nullable: true })
+  direccion!: string;
 }
