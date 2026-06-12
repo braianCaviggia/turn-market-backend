@@ -18,4 +18,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   telefono?: string
+
+  @IsOptional()
+  @IsString()
+  direccion?: string
 }
