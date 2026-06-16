@@ -19,6 +19,9 @@ export class ProfessionalProfile {
   @Column('decimal')
   precio_max!: number;
 
+  @Column()
+  direccion!: string;
+
   @Column({ nullable: true })
   descripcion!: string;
 }

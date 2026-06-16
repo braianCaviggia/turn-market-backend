@@ -5,11 +5,15 @@ import { UserModule } from '../user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
+import { User } from '../user/entities/user.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
     UserModule,
     PassportModule,
+    TypeOrmModule.forFeature([User]),
+
 
     JwtModule.register({
       secret: 'mi_clave_secreta',
@@ -26,4 +30,4 @@ import { JwtStrategy } from './jwt.strategy';
     JwtStrategy,
   ],
 })
-export class AuthModule {}
+export class AuthModule { }

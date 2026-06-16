@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ProfessionalProfile } from '../professional-profile/entities/professional-profile.entity';
+import { Turn } from '../turn/entities/turn.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -24,14 +25,41 @@ export class UserService {
       ],
     });
   }
-  remove(arg0: number) {
-    throw new Error('Method not implemented.');
+  async remove(id: number) {
+    try {
+      // Eliminar todos los turnos donde el usuario es cliente o profesional
+      await this.turnRepository.delete([
+        { cliente: { id } },
+        { profesional: { id } },
+      ]);
+
+      // Eliminar el perfil profesional si existe
+      await this.professionalRepository.delete({ user: { id } });
+
+      // Finalmente eliminar el usuario
+      await this.userRepository.delete(id);
+
+      return { message: 'Usuario eliminado correctamente' };
+    } catch (error: any) {
+      console.error(error);
+      throw new InternalServerErrorException('Error al eliminar el usuario');
+    }
   }
   update(arg0: number, updateUserDto: UpdateUserDto) {
-    throw new Error('Method not implemented.');
+    return this.userRepository.update(arg0, updateUserDto);
   }
-  findOne(arg0: number) {
-    throw new Error('Method not implemented.');
+  async findOne(id: number) {
+    return this.userRepository.findOne({
+      where: { id },
+      select: [
+        'id',
+        'nombre',
+        'apellido',
+        'email',
+        'telefono',
+        'rol',
+      ],
+    });
   }
   findAll() {
     throw new Error('Method not implemented.');
@@ -43,6 +71,9 @@ export class UserService {
 
     @InjectRepository(ProfessionalProfile)
     private professionalRepository: Repository<ProfessionalProfile>,
+
+    @InjectRepository(Turn)
+    private turnRepository: Repository<Turn>,
   ) { }
 
   async create(dto: CreateUserDto) {
@@ -76,6 +107,7 @@ export class UserService {
           profesion: dto.profesion,
           precio_min: dto.precio_min || 0,
           precio_max: dto.precio_max || 0,
+          direccion: dto.direccion || null,
           // descripcion: dto.descripcion,
         });
       }

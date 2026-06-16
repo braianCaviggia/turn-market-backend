@@ -109,13 +109,22 @@ export class TurnService {
   
   }
 
-   async actualizarEstadoTurno(turnoId: number, estado: string): Promise<Turn> {
+   async actualizarEstadoTurno(
+    turnoId: number,
+    estado: string,
+    duracionEstimada?: number,
+    bufferDescanso?: number,
+    horaFin?: string,
+  ): Promise<Turn> {
     const turno = await this.turnRepository.findOne({
       where: { id: turnoId },
       relations: ['cliente', 'profesional'],
     });
     if (!turno) throw new NotFoundException(`Turno ${turnoId} no encontrado`);
     turno.estado = estado;
+    if (duracionEstimada !== undefined) turno.duracionEstimada = duracionEstimada;
+    if (bufferDescanso !== undefined) turno.bufferDescanso = bufferDescanso;
+    if (horaFin !== undefined) turno.horaFin = horaFin;
     return this.turnRepository.save(turno);
   }
 
