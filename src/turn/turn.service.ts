@@ -6,7 +6,7 @@ import { Turn } from './entities/turn.entity';
 import { Repository } from 'typeorm';
 import { ProfessionalProfile } from '../professional-profile/entities/professional-profile.entity';
 import { User } from '../user/entities/user.entity';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 
 @Injectable()
 export class TurnService {
@@ -121,11 +121,81 @@ export class TurnService {
       relations: ['cliente', 'profesional'],
     });
     if (!turno) throw new NotFoundException(`Turno ${turnoId} no encontrado`);
+
+    // Si se está confirmando el turno y tenemos una hora de fin estimada,
+    // validamos que no se superponga con otro turno ya confirmado del mismo profesional
+    if (estado === 'confirmado' && horaFin) {
+      await this.validarSolapamiento(turno, horaFin);
+    }
+
     turno.estado = estado;
     if (duracionEstimada !== undefined) turno.duracionEstimada = duracionEstimada;
     if (bufferDescanso !== undefined) turno.bufferDescanso = bufferDescanso;
     if (horaFin !== undefined) turno.horaFin = horaFin;
     return this.turnRepository.save(turno);
+  }
+
+  // Combina la fecha de un turno (Date) con una hora "HH:MM" para obtener un Date completo
+  private combinarFechaYHora(fecha: Date, horaStr: string): Date {
+    const [h, m] = horaStr.split(':').map(Number);
+    const resultado = new Date(fecha);
+    resultado.setHours(h, m, 0, 0);
+    return resultado;
+  }
+
+  // Verifica que el rango [inicio, horaFin) del turno a confirmar no se solape
+  // con otro turno ya confirmado del mismo profesional, el mismo día
+  private async validarSolapamiento(turno: Turn, horaFin: string): Promise<void> {
+    const inicioNuevo = new Date(turno.fecha_hora);
+    const finNuevo = this.combinarFechaYHora(turno.fecha_hora, horaFin);
+
+    const inicioDia = new Date(turno.fecha_hora);
+    inicioDia.setHours(0, 0, 0, 0);
+    const finDia = new Date(inicioDia);
+    finDia.setDate(finDia.getDate() + 1);
+
+    const confirmadosDelProfesional = await this.turnRepository.find({
+      where: {
+        profesional: { id: turno.profesional.id },
+        estado: 'confirmado',
+      },
+      relations: ['cliente', 'profesional'],
+    });
+
+    const conflicto = confirmadosDelProfesional.find((otro) => {
+      if (otro.id === turno.id) return false;
+
+      const inicioOtro = new Date(otro.fecha_hora);
+      if (inicioOtro < inicioDia || inicioOtro >= finDia) return false; // distinto día
+
+      // Si el otro turno no tiene horaFin guardada, lo tratamos como un instante puntual
+      const finOtro = otro.horaFin
+        ? this.combinarFechaYHora(otro.fecha_hora, otro.horaFin)
+        : new Date(inicioOtro.getTime() + 1);
+
+      // Dos rangos [inicioNuevo, finNuevo) y [inicioOtro, finOtro) se solapan si:
+      return inicioNuevo < finOtro && inicioOtro < finNuevo;
+    });
+
+    if (conflicto) {
+      const horaInicioConflicto = new Date(conflicto.fecha_hora).toLocaleTimeString('es-AR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+      const horaFinConflicto = conflicto.horaFin || horaInicioConflicto;
+      const nombreCliente = conflicto.cliente
+        ? `${conflicto.cliente.nombre ?? ''} ${conflicto.cliente.apellido ?? ''}`.trim()
+        : 'otro cliente';
+
+      throw new ConflictException({
+        message: `El horario elegido (hasta las ${horaFin}) se superpone con el turno de ${nombreCliente}, confirmado de ${horaInicioConflicto} a ${horaFinConflicto}.`,
+        tipo: 'SOLAPAMIENTO_TURNO',
+        turnoConflictoId: conflicto.id,
+        horaInicioConflicto,
+        horaFinConflicto,
+      });
+    }
   }
 
 
