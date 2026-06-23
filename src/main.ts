@@ -13,7 +13,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'], // ajusta esto a tu frontend
+    origin: ['http://localhost:5173', 'http://localhost:5174', 'https://turn-market-frontend.onrender.com'], // ajusta esto a tu frontend
     methods: 'GET,POST,PUT,DELETE,PATCH',
     credentials: true,
   });
