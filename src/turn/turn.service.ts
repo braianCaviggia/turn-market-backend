@@ -48,11 +48,11 @@ export class TurnService {
 
     //validar si la fecha esta bien y es actual
 
-   const fechaHora = new Date(createTurnDto.fecha_hora);
+   const fechaHora = this.parseFechaHoraLocal(createTurnDto.fecha_hora);
 
-  if (isNaN(fechaHora.getTime())) {
-    throw new BadRequestException('Fecha u hora inválida'); //verifica que no sea una fecha que no exista
-  }
+    if (isNaN(fechaHora.getTime())) {
+      throw new BadRequestException('Fecha u hora inválida'); //verifica que no sea una fecha que no exista
+    }
     const fechaActual = new Date()
 
     if (fechaHora < fechaActual) {
@@ -136,6 +136,20 @@ export class TurnService {
   }
 
   // Combina la fecha de un turno (Date) con una hora "HH:MM" para obtener un Date completo
+  private parseFechaHoraLocal(fechaHoraIso: string): Date {
+    // Si la cadena incluye zona horaria se deja que Date la interprete.
+    if (/[Zz]|[+-][0-9]{2}:?[0-9]{2}$/.test(fechaHoraIso)) {
+      return new Date(fechaHoraIso);
+    }
+
+    const [fecha, hora] = fechaHoraIso.split('T');
+    if (!fecha || !hora) return new Date('');
+
+    const [year, month, day] = fecha.split('-').map(Number);
+    const [hour, minute] = hora.split(':').map(Number);
+    return new Date(year, month - 1, day, hour, minute, 0, 0);
+  }
+
   private combinarFechaYHora(fecha: Date, horaStr: string): Date {
     const [h, m] = horaStr.split(':').map(Number);
     const resultado = new Date(fecha);
