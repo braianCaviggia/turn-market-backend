@@ -199,13 +199,9 @@ export class TurnService {
         ? `${conflicto.cliente.nombre ?? ''} ${conflicto.cliente.apellido ?? ''}`.trim()
         : 'otro cliente';
 
-      throw new ConflictException({
-        message: `El horario elegido (hasta las ${horaFin}) se superpone con el turno de ${nombreCliente}, confirmado de ${horaInicioConflicto} a ${horaFinConflicto}.`,
-        tipo: 'SOLAPAMIENTO_TURNO',
-        turnoConflictoId: conflicto.id,
-        horaInicioConflicto,
-        horaFinConflicto,
-      });
+      const mensaje = `El horario elegido (hasta las ${horaFin}) se superpone con el turno de ${nombreCliente}, confirmado de ${horaInicioConflicto} a ${horaFinConflicto}.`;
+      
+      throw new ConflictException(mensaje);
     }
   }
 
