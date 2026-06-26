@@ -153,58 +153,67 @@ export class TurnService {
     return resultado;
   }
 
+
   // Verifica que el rango [inicio, horaFin) del turno a confirmar no se solape
-  // con otro turno ya confirmado del mismo profesional, el mismo día
-  private async validarSolapamiento(turno: Turn, horaFin: string): Promise<void> {
-    const inicioNuevo = new Date(turno.fecha_hora);
-    const finNuevo = this.combinarFechaYHora(turno.fecha_hora, horaFin);
+// con otro turno ya confirmado del mismo profesional, el mismo día
+private async validarSolapamiento(turno: Turn, horaFin: string): Promise<void> {
+  const inicioNuevo = new Date(turno.fecha_hora);
+  const finNuevo = this.combinarFechaYHora(turno.fecha_hora, horaFin);
 
-    const inicioDia = new Date(turno.fecha_hora);
-    inicioDia.setHours(0, 0, 0, 0);
-    const finDia = new Date(inicioDia);
-    finDia.setDate(finDia.getDate() + 1);
+  // Comparamos "mismo día" usando la fecha en formato Argentina (string),
+  // no setHours/getDate, que dependen del timezone del proceso (UTC en Render).
+  const diaNuevo = new Date(turno.fecha_hora).toLocaleDateString('en-CA', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+  }); // formato "YYYY-MM-DD", estable sin importar el timezone del proceso
 
-    const confirmadosDelProfesional = await this.turnRepository.find({
-      where: {
-        profesional: { id: turno.profesional.id },
-        estado: 'confirmado',
-      },
-      relations: ['cliente', 'profesional'],
+  const confirmadosDelProfesional = await this.turnRepository.find({
+    where: {
+      profesional: { id: turno.profesional.id },
+      estado: 'confirmado',
+    },
+    relations: ['cliente', 'profesional'],
+  });
+
+  const conflicto = confirmadosDelProfesional.find((otro) => {
+    if (otro.id === turno.id) return false;
+
+    const inicioOtro = new Date(otro.fecha_hora);
+
+    const diaOtro = inicioOtro.toLocaleDateString('en-CA', {
+      timeZone: 'America/Argentina/Buenos_Aires',
     });
+    if (diaOtro !== diaNuevo) return false; // distinto día (en hora Argentina)
 
-    const conflicto = confirmadosDelProfesional.find((otro) => {
-      if (otro.id === turno.id) return false;
+    // Si el otro turno no tiene horaFin guardada, lo tratamos como un instante puntual
+    const finOtro = otro.horaFin
+      ? this.combinarFechaYHora(otro.fecha_hora, otro.horaFin)
+      : new Date(inicioOtro.getTime() + 1);
 
-      const inicioOtro = new Date(otro.fecha_hora);
-      if (inicioOtro < inicioDia || inicioOtro >= finDia) return false; // distinto día
+    // Dos rangos [inicioNuevo, finNuevo) y [inicioOtro, finOtro) se solapan si:
+    return inicioNuevo < finOtro && inicioOtro < finNuevo;
+  });
 
-      // Si el otro turno no tiene horaFin guardada, lo tratamos como un instante puntual
-      const finOtro = otro.horaFin
-        ? this.combinarFechaYHora(otro.fecha_hora, otro.horaFin)
-        : new Date(inicioOtro.getTime() + 1);
-
-      // Dos rangos [inicioNuevo, finNuevo) y [inicioOtro, finOtro) se solapan si:
-      return inicioNuevo < finOtro && inicioOtro < finNuevo;
+  if (conflicto) {
+    const horaInicioConflicto = new Date(conflicto.fecha_hora).toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'America/Argentina/Buenos_Aires',
     });
+    const horaFinConflicto = conflicto.horaFin || horaInicioConflicto;
+    const nombreCliente = conflicto.cliente
+      ? `${conflicto.cliente.nombre ?? ''} ${conflicto.cliente.apellido ?? ''}`.trim()
+      : 'otro cliente';
 
-    if (conflicto) {
-      const horaInicioConflicto = new Date(conflicto.fecha_hora).toLocaleTimeString('es-AR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'America/Argentina/Buenos_Aires',
-      });
-      const horaFinConflicto = conflicto.horaFin || horaInicioConflicto;
-      const nombreCliente = conflicto.cliente
-        ? `${conflicto.cliente.nombre ?? ''} ${conflicto.cliente.apellido ?? ''}`.trim()
-        : 'otro cliente';
-
-      const mensaje = `El horario elegido (hasta las ${horaFin}) se superpone con el turno de ${nombreCliente}, confirmado de ${horaInicioConflicto} a ${horaFinConflicto}.`;
-      
-      throw new ConflictException(mensaje);
-    }
+    throw new ConflictException({
+      message: `El horario elegido (hasta las ${horaFin}) se superpone con el turno de ${nombreCliente}, confirmado de ${horaInicioConflicto} a ${horaFinConflicto}.`,
+      tipo: 'SOLAPAMIENTO_TURNO',
+      turnoConflictoId: conflicto.id,
+      horaInicioConflicto,
+      horaFinConflicto,
+    });
   }
-
+}
 
   find() {
     return this.turnRepository.find({
