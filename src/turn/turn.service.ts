@@ -137,19 +137,15 @@ export class TurnService {
 
   // Combina la fecha de un turno (Date) con una hora "HH:MM" para obtener un Date completo
   private parseFechaHoraLocal(fechaHoraIso: string): Date {
-    // Si la cadena incluye zona horaria se deja que Date la interprete.
-    if (/[Zz]|[+-][0-9]{2}:?[0-9]{2}$/.test(fechaHoraIso)) {
-      return new Date(fechaHoraIso);
-    }
-
-    const [fecha, hora] = fechaHoraIso.split('T');
-    if (!fecha || !hora) return new Date('');
-
-    const [year, month, day] = fecha.split('-').map(Number);
-    const [hour, minute] = hora.split(':').map(Number);
-    return new Date(year, month - 1, day, hour, minute, 0, 0);
+  // Si la cadena incluye zona horaria se deja que Date la interprete.
+  if (/[Zz]|[+-][0-9]{2}:?[0-9]{2}$/.test(fechaHoraIso)) {
+    return new Date(fechaHoraIso);
   }
 
+  // Forzamos el offset de Argentina en vez de depender del timezone
+  // del proceso que ejecuta el código (en Render corre en UTC).
+  return new Date(`${fechaHoraIso}-03:00`);
+}
   private combinarFechaYHora(fecha: Date, horaStr: string): Date {
     const [h, m] = horaStr.split(':').map(Number);
     const resultado = new Date(fecha);
@@ -196,6 +192,7 @@ export class TurnService {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false,
+        timeZone: 'America/Argentina/Buenos_Aires',
       });
       const horaFinConflicto = conflicto.horaFin || horaInicioConflicto;
       const nombreCliente = conflicto.cliente
