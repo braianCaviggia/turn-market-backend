@@ -10,6 +10,7 @@ export const databaseConfig: TypeOrmModuleAsyncOptions = {
     username: configService.get<string>('DB_USER'),
     password: configService.get<string>('DB_PASS'),
     database: configService.get<string>('DB_NAME'),
+    timezone: '-03:00',
     autoLoadEntities: true,
     synchronize: false,
   }),
