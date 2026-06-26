@@ -146,12 +146,21 @@ export class TurnService {
   // del proceso que ejecuta el código (en Render corre en UTC).
   return new Date(`${fechaHoraIso}-03:00`);
 }
-  private combinarFechaYHora(fecha: Date, horaStr: string): Date {
-    const [h, m] = horaStr.split(':').map(Number);
-    const resultado = new Date(fecha);
-    resultado.setHours(h, m, 0, 0);
-    return resultado;
-  }
+private combinarFechaYHora(fecha: Date, horaStr: string): Date {
+  const [h, m] = horaStr.split(':').map(Number);
+
+  // Tomamos el día calendario de `fecha` en hora Argentina (no en el
+  // timezone del proceso), y le aplicamos horaStr como hora Argentina,
+  // construyendo el instante con el offset -03:00 explícito.
+  const diaArg = fecha.toLocaleDateString('en-CA', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+  }); // "YYYY-MM-DD"
+
+  const hh = String(h).padStart(2, '0');
+  const mm = String(m).padStart(2, '0');
+
+  return new Date(`${diaArg}T${hh}:${mm}:00-03:00`);
+}
 
 
   // Verifica que el rango [inicio, horaFin) del turno a confirmar no se solape
